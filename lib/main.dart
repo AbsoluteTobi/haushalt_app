@@ -8,9 +8,15 @@ import 'package:haushalt_app/providers/fridge_provider.dart';
 import 'package:haushalt_app/providers/laundry_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FridgeProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
