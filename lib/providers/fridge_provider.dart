@@ -1,7 +1,6 @@
 // providers/fridge_provider.dart
 import 'package:flutter/material.dart';
 import 'package:haushalt_app/models/kuehlschrank.dart';
-import 'package:haushalt_app/models/lebensmittel.dart';
 import 'package:haushalt_app/api/api_service.dart';
 
 class FridgeProvider with ChangeNotifier {
@@ -14,11 +13,7 @@ class FridgeProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   final ApiService _apiService = ApiService();
-  
-void addLebensmittel(Lebensmittel lebensmittel) {
-    _fridge?.lebensmittel.add(lebensmittel);
-    notifyListeners();
-  }
+
   Future<void> fetchFridgeStatus() async {
     _isLoading = true;
     _errorMessage = null;
