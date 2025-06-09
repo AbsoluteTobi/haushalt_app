@@ -1,21 +1,37 @@
 // api/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:haushalt_app/models/haushaltsaufgabe.dart';
 import 'package:haushalt_app/models/geschirrspueler.dart';
 import 'package:haushalt_app/models/kuehlschrank.dart';
 import 'package:haushalt_app/models/waesche.dart';
 
 class ApiService {
-  // Base URL for your Django backend.
-  // IMPORTANT: Use your actual Django backend IP/hostname if not running on localhost.
-  // For Android emulator, '10.0.2.2' maps to your host machine's localhost.
-  // For iOS simulator or real device, use your machine's local IP address (e.g., '192.168.1.X').
-  static const String _baseUrl = 'http://192.168.178.22:8000/api'; // Example for Android Emulator
+  static const String _baseUrl = 'http://192.168.178.22:8000/api';
+
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      if (token != null) 'Authorization': 'Token $token',
+    };
+  }
 
   // --- Haushaltsaufgaben (Household Tasks) ---
   Future<List<Haushaltsaufgabe>> getTasks() async {
-    final response = await http.get(Uri.parse('$_baseUrl/haushaltsaufgaben/'));
+    final headers = await _getHeaders();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/haushaltsaufgaben/'),
+      headers: headers,
+    );
+
     if (response.statusCode == 200) {
       Iterable jsonResponse = json.decode(utf8.decode(response.bodyBytes));
       return jsonResponse.map((model) => Haushaltsaufgabe.fromJson(model)).toList();
@@ -25,9 +41,11 @@ class ApiService {
   }
 
   Future<Haushaltsaufgabe> createTask(Haushaltsaufgabe task) async {
+    final headers = await _getHeaders();
+
     final response = await http.post(
       Uri.parse('$_baseUrl/haushaltsaufgaben/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(task.toJson()),
     );
     if (response.statusCode == 201) {
@@ -38,9 +56,11 @@ class ApiService {
   }
 
   Future<Haushaltsaufgabe> updateTask(Haushaltsaufgabe task) async {
+    final headers = await _getHeaders();
+
     final response = await http.put(
       Uri.parse('$_baseUrl/haushaltsaufgaben/${task.id}/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(task.toJson()),
     );
     if (response.statusCode == 200) {
@@ -51,7 +71,12 @@ class ApiService {
   }
 
   Future<void> deleteTask(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/haushaltsaufgaben/$id/'));
+    final headers = await _getHeaders();
+
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/haushaltsaufgaben/$id/'),
+      headers: headers,
+    );
     if (response.statusCode != 204) {
       throw Exception('Failed to delete task: ${response.statusCode}');
     }
@@ -59,9 +84,12 @@ class ApiService {
 
   // --- Geschirrspueler (Dishwasher) ---
   Future<List<Geschirrspueler>> getDishwashers() async {
-    // Django REST Framework often returns a list, even for a single instance.
-    // We'll assume there's usually only one dishwasher.
-    final response = await http.get(Uri.parse('$_baseUrl/geschirrspueler/'));
+    final headers = await _getHeaders();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/geschirrspueler/'),
+      headers: headers,
+    );
     if (response.statusCode == 200) {
       Iterable jsonResponse = json.decode(utf8.decode(response.bodyBytes));
       return jsonResponse.map((model) => Geschirrspueler.fromJson(model)).toList();
@@ -71,10 +99,11 @@ class ApiService {
   }
 
   Future<Geschirrspueler> updateDishwasher(Geschirrspueler dishwasher) async {
-    // Assuming there's only one dishwasher with ID 1, or handle getting the correct ID
+    final headers = await _getHeaders();
+
     final response = await http.put(
       Uri.parse('$_baseUrl/geschirrspueler/${dishwasher.id}/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(dishwasher.toJson()),
     );
     if (response.statusCode == 200) {
@@ -86,7 +115,12 @@ class ApiService {
 
   // --- Kuehlschrank (Refrigerator) ---
   Future<List<Kuehlschrank>> getFridges() async {
-    final response = await http.get(Uri.parse('$_baseUrl/kuehlschrank/'));
+    final headers = await _getHeaders();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/kuehlschrank/'),
+      headers: headers,
+    );
     if (response.statusCode == 200) {
       Iterable jsonResponse = json.decode(utf8.decode(response.bodyBytes));
       return jsonResponse.map((model) => Kuehlschrank.fromJson(model)).toList();
@@ -96,9 +130,11 @@ class ApiService {
   }
 
   Future<Kuehlschrank> updateFridge(Kuehlschrank fridge) async {
+    final headers = await _getHeaders();
+
     final response = await http.put(
       Uri.parse('$_baseUrl/kuehlschrank/${fridge.id}/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(fridge.toJson()),
     );
     if (response.statusCode == 200) {
@@ -108,9 +144,14 @@ class ApiService {
     }
   }
 
-  // --- Waelte (Laundry) ---
+  // --- Waesche (Laundry) ---
   Future<List<Waelte>> getLaundryItems() async {
-    final response = await http.get(Uri.parse('$_baseUrl/waesche/'));
+    final headers = await _getHeaders();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/waesche/'),
+      headers: headers,
+    );
     if (response.statusCode == 200) {
       Iterable jsonResponse = json.decode(utf8.decode(response.bodyBytes));
       return jsonResponse.map((model) => Waelte.fromJson(model)).toList();
@@ -120,9 +161,11 @@ class ApiService {
   }
 
   Future<Waelte> updateLaundry(Waelte laundry) async {
+    final headers = await _getHeaders();
+
     final response = await http.put(
       Uri.parse('$_baseUrl/waesche/${laundry.id}/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(laundry.toJson()),
     );
     if (response.statusCode == 200) {
@@ -133,9 +176,11 @@ class ApiService {
   }
 
   Future<Waelte> createLaundry(Waelte laundry) async {
+    final headers = await _getHeaders();
+
     final response = await http.post(
       Uri.parse('$_baseUrl/waesche/'),
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: headers,
       body: jsonEncode(laundry.toJson()),
     );
     if (response.statusCode == 201) {
@@ -146,7 +191,12 @@ class ApiService {
   }
 
   Future<void> deleteLaundry(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/waesche/$id/'));
+    final headers = await _getHeaders();
+
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/waesche/$id/'),
+      headers: headers,
+    );
     if (response.statusCode != 204) {
       throw Exception('Failed to delete laundry item: ${response.statusCode}');
     }

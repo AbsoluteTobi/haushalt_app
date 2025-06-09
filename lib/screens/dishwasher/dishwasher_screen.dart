@@ -25,7 +25,7 @@ class _DishwasherScreenState extends State<DishwasherScreen> {
     await Provider.of<DishwasherProvider>(context, listen: false).fetchDishwasherStatus();
   }
 
-  void _updateStatus(String newStatus, String newFillLevel, DateTime? lastRun) {
+  void _updateStatus(String newStatus, DateTime? lastRun) {
     final dishwasherProvider = Provider.of<DishwasherProvider>(context, listen: false);
     final currentDishwasher = dishwasherProvider.dishwasher;
 
@@ -40,7 +40,6 @@ class _DishwasherScreenState extends State<DishwasherScreen> {
     final updatedDishwasher = Geschirrspueler(
       id: currentDishwasher.id,
       status: newStatus,
-      fuellstand: newFillLevel,
       letzterStart: lastRun ?? currentDishwasher.letzterStart,
     );
 
@@ -139,16 +138,9 @@ class _DishwasherScreenState extends State<DishwasherScreen> {
                         const SizedBox(height: 20),
                         _buildStatusRow(
                           'Status:',
-                          dishwasher.status == 'AN' ? 'An' : 'Aus',
+                          dishwasher.status == 'an' ? 'An' : 'Aus',
                           Icons.power_settings_new,
-                          dishwasher.status == 'AN' ? Colors.green : Colors.red,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildStatusRow(
-                          'Füllstand:',
-                          _getFillLevelText(dishwasher.fuellstand),
-                          _getFillLevelIcon(dishwasher.fuellstand),
-                          _getFillLevelColor(dishwasher.fuellstand),
+                          dishwasher.status == 'an' ? Colors.green : Colors.red,
                         ),
                         const SizedBox(height: 10),
                         _buildStatusRow(
@@ -178,37 +170,37 @@ class _DishwasherScreenState extends State<DishwasherScreen> {
                   children: [
                     _buildActionButton(
                       context,
-                      'Starten & Leeren',
+                      'An',
                       Icons.play_arrow,
-                      () => _updateStatus('AN', 'LEER', DateTime.now()),
+                      () => _updateStatus('an', DateTime.now()),
                       Colors.green[600]!,
                     ),
                     _buildActionButton(
                       context,
-                      'Ausschalten',
+                      'Aus',
                       Icons.power_off,
-                      () => _updateStatus('AUS', dishwasher.fuellstand, dishwasher.letzterStart),
+                      () => _updateStatus('aus', dishwasher.letzterStart),
                       Colors.deepOrange,
                     ),
                     _buildActionButton(
                       context,
-                      'Als Voll markieren',
+                      'Leer',
                       Icons.disc_full,
-                      () => _updateStatus(dishwasher.status, 'VOLL', dishwasher.letzterStart),
+                      () => _updateStatus("leer", dishwasher.letzterStart),
                       Colors.blueAccent,
                     ),
                     _buildActionButton(
                       context,
-                      'Als Halb voll markieren',
+                      'Fast ',
                       Icons.hourglass_bottom,
-                      () => _updateStatus(dishwasher.status, 'HALB_VOLL', dishwasher.letzterStart),
+                      () => _updateStatus("fast voll", dishwasher.letzterStart),
                       Colors.amber,
                     ),
                     _buildActionButton(
                       context,
-                      'Als Leer markieren',
+                      'Voll',
                       Icons.delete_sweep,
-                      () => _updateStatus(dishwasher.status, 'LEER', dishwasher.letzterStart),
+                      () => _updateStatus("voll", dishwasher.letzterStart),
                       Colors.lightBlue,
                     ),
                   ],

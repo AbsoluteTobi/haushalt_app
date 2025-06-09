@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:haushalt_app/firebase_options.dart';
 import 'package:haushalt_app/providers/dishwasher_provider.dart';
+import 'package:haushalt_app/screens/auth/authchecker.dart';
+import 'package:haushalt_app/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:haushalt_app/screens/auth/login_screen.dart';
 import 'package:haushalt_app/providers/task_provider.dart';
@@ -170,7 +172,8 @@ class MyApp extends StatelessWidget {
             titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
         ),
-        home: const LoginScreen(),
+        home: const AuthChecker(),
+
       ),
     );
   }

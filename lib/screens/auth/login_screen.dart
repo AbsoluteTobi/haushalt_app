@@ -1,5 +1,8 @@
-// screens/auth/login_screen.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:haushalt_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,17 +17,54 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _login() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // THIS IS A PLACEHOLDER LOGIN.
-      // In a real app, you would send _usernameController.text and _passwordController.text
-      // to your Django backend's authentication endpoint.
-      // If successful, you would navigate to HomeScreen and save the received auth token.
+  bool _isLoading = false;
+  String? _errorMessage;
 
-      // For now, simply navigate to the home screen.
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+  Future<void> _login() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    const String apiUrl = "http://192.168.178.22:8000/api/token-auth/";
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "username": _usernameController.text,
+          "password": _passwordController.text,
+        }),
       );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data["token"];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("auth_token", token);
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = "Benutzername oder Passwort ist falsch.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Verbindungsfehler. Bitte versuche es später erneut.";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -55,6 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 30),
+                if (_errorMessage != null) ...[
+                  Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 10),
+                ],
                 TextFormField(
                   controller: _usernameController,
                   decoration: const InputDecoration(
@@ -62,12 +106,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: 'Geben Sie Ihren Benutzernamen ein',
                     prefixIcon: Icon(Icons.person),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Bitte geben Sie Ihren Benutzernamen ein';
-                    }
-                    return null;
-                  },
+                  validator: (value) =>
+                      (value == null || value.isEmpty) ? 'Bitte geben Sie Ihren Benutzernamen ein' : null,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -78,21 +118,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.lock),
                   ),
                   obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Bitte geben Sie Ihr Passwort ein';
-                    }
-                    return null;
-                  },
+                  validator: (value) =>
+                      (value == null || value.isEmpty) ? 'Bitte geben Sie Ihr Passwort ein' : null,
                 ),
                 const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _login,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50), // Make button full width
-                  ),
-                  child: const Text('Anmelden'),
-                ),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: const Text('Anmelden'),
+                      ),
               ],
             ),
           ),
