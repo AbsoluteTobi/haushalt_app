@@ -1,52 +1,49 @@
-// models/kuehlschrank.dart
-import 'package:intl/intl.dart';
 import 'lebensmittel.dart';
 
-
 class Kuehlschrank {
-  final int? id;
-  final DateTime? letzteReinigung;
-  final String inhaltBeschreibung;
-  final String hinweise;
-  final DateTime? zuletztAktualisiert;
+  final String id;
+  final String name;
   final List<Lebensmittel> lebensmittel;
+  final String? hinweise;
+  final DateTime? letzteReinigung;
+  final DateTime? zuletztAktualisiert;
 
   Kuehlschrank({
-    this.id,
+    required this.id,
+    required this.name,
+    required this.lebensmittel,
+    this.hinweise,
     this.letzteReinigung,
-    this.inhaltBeschreibung = '',
-    this.hinweise = '',
     this.zuletztAktualisiert,
-    List<Lebensmittel>? lebensmittel, // optional
-}) : lebensmittel = lebensmittel ?? [];
-
+  });
 
   factory Kuehlschrank.fromJson(Map<String, dynamic> json) {
+    var lebensmittelList = (json['lebensmittel'] as List<dynamic>?)
+        ?.map((e) => Lebensmittel.fromJson(e as Map<String, dynamic>))
+        .toList() ?? [];
+
     return Kuehlschrank(
-      id: json['id'],
-      letzteReinigung: json['letzte_reinigung'] != null
-          ? DateTime.tryParse(json['letzte_reinigung'])
+      id: json['id'] as String,
+      name: json['name'] as String,
+      lebensmittel: lebensmittelList,
+      hinweise: json['hinweise'] as String?,
+      letzteReinigung: json['letzteReinigung'] != null
+          ? DateTime.parse(json['letzteReinigung'] as String)
           : null,
-      inhaltBeschreibung: json['inhalt_beschreibung'] ?? '',
-      hinweise: json['hinweise'] ?? '',
-      zuletztAktualisiert: json['zuletzt_aktualisiert'] != null
-          ? DateTime.tryParse(json['zuletzt_aktualisiert'])
+      zuletztAktualisiert: json['zuletztAktualisiert'] != null
+          ? DateTime.parse(json['zuletztAktualisiert'] as String)
           : null,
-      lebensmittel: (json['lebensmittel'] as List<dynamic>? ?? [])
-          .map((item) => Lebensmittel.fromJson(item))
-          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
     return {
       'id': id,
-      'letzte_reinigung':
-          letzteReinigung != null ? formatter.format(letzteReinigung!) : null,
-      'inhalt_beschreibung': inhaltBeschreibung,
-      'hinweise': hinweise,
+      'name': name,
       'lebensmittel': lebensmittel.map((e) => e.toJson()).toList(),
+      'hinweise': hinweise,
+      'letzteReinigung': letzteReinigung?.toIso8601String(),
+      'zuletztAktualisiert': zuletztAktualisiert?.toIso8601String(),
     };
   }
 }

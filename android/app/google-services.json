@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "742248438948",
+    "project_id": "haushalt-8548c",
+    "storage_bucket": "haushalt-8548c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742248438948:android:c4b3e94620a51eb6481a31",
+        "android_client_info": {
+          "package_name": "com.example.haushalt_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTbzibBisnmdRyGyZ7jYuhpbx2L2NbWMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

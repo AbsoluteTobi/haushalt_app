@@ -15,11 +15,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    TaskListScreen(),
-    DishwasherScreen(),
-    FridgeScreen(),
-    LaundryScreen(),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const TaskListScreen(),
+    const DishwasherScreen(),
+    const FridgeScreen(),
+    const LaundryScreen(),
   ];
 
   void _onItemTapped(int index) {
