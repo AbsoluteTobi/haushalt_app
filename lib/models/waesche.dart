@@ -1,6 +1,4 @@
 // models/waesche.dart
-import 'package:intl/intl.dart';
-
 class Waelte {
   final int? id;
   final String waescheTyp;

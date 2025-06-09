@@ -2,6 +2,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:haushalt_app/firebase_options.dart';
 import 'package:haushalt_app/providers/dishwasher_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:haushalt_app/screens/auth/login_screen.dart';
@@ -11,7 +12,44 @@ import 'package:haushalt_app/providers/laundry_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
+  runApp(MyApp());
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  await setupNotifications();
+
+  String? token = await messaging.getToken();
+
+Future<void> sendTokenToBackend(String? token) async {
+  if (token == null) return;
+
+  final url = Uri.parse('http://192.168.178.22:8000/api/save-token/'); // Ersetze durch deine URL
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: '{"token": "$token"}',
+    );
+
+    if (response.statusCode == 200) {
+      print('Token erfolgreich zum Backend gesendet');
+    } else {
+      print('Fehler beim Senden des Tokens: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Exception beim Senden des Tokens: $e');
+  }
+}
+
+  await sendTokenToBackend(token);
+}final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 Future<void> setupNotifications() async {
@@ -63,42 +101,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  await setupNotifications();
-
-  String? token = await messaging.getToken();
-  print("FCM TOKEN: $token");
-
-Future<void> sendTokenToBackend(String? token) async {
-  if (token == null) return;
-
-  final url = Uri.parse('http://192.168.178.22:8000/api/save-token/'); // Ersetze durch deine URL
-
-  try {
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: '{"token": "$token"}',
-    );
-
-    if (response.statusCode == 200) {
-      print('Token erfolgreich zum Backend gesendet');
-    } else {
-      print('Fehler beim Senden des Tokens: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('Exception beim Senden des Tokens: $e');
-  }
-}
-
-  await sendTokenToBackend(token);
-  runApp(MyApp());
-}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
